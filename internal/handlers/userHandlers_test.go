@@ -100,6 +100,19 @@ func TestUserHandler_Login(t *testing.T) {
 			if user.Email == "invalid@example.com" {
 				return internal.EMPTY, ErrInvalidCredentials
 			}
+
+            if user.Password == "wrongpass" {
+                return internal.EMPTY, ErrInvalidCredentials
+            }
+
+            if user.Email == internal.EMPTY {
+                return internal.EMPTY, ErrMissingEmail
+            }
+
+            if user.Password == internal.EMPTY {
+                return internal.EMPTY, ErrMissingPassword
+            }
+
 			return "mocked_token_123", nil
 		},
 	}
@@ -123,6 +136,24 @@ func TestUserHandler_Login(t *testing.T) {
 			inputBody:  `{"email": "invalid@example.com", "password": "wrongpass"}`,
 			wantStatus: http.StatusInternalServerError,
 			wantResp:   `could not validate this credentials, error: invalid credentials`,
+		},
+		{
+			name:       "Invalid credentials - Password",
+			inputBody:  `{"email": "john@example.com", "password": "wrongpass"}`,
+			wantStatus: http.StatusInternalServerError,
+			wantResp:   `could not validate this credentials, error: invalid credentials`,
+		},
+		{
+			name:       "Missing Email",
+			inputBody:  `{"email": "", "password": "securepass"}`,
+			wantStatus: http.StatusInternalServerError,
+			wantResp:   `could not validate this credentials, error: email is required`,
+		},
+		{
+			name:       "Missing Password",
+			inputBody:  `{"email": "jhon@example.com", "password": ""}`,
+			wantStatus: http.StatusInternalServerError,
+			wantResp:   `could not validate this credentials, error: password is required`,
 		},
 	}
 
