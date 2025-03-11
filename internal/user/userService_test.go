@@ -119,8 +119,10 @@ func TestRegister(t *testing.T) {
     }
 }
 
-var ErrRegisterFuncNotImplemented = errors.New("RegisterFunc not implemented")
-var ErrValidateCredentialsFuncNotImplemented = errors.New("ValidateCredentialsFunc not implemented")
-var ErrEmailEmpty = errors.New("Email cannot be empty")
-var ErrPasswordEmpty = errors.New("Password cannot be empty")
-var ErrDatabaseError = errors.New("Database error")
+var (
+    ErrRegisterFuncNotImplemented = errors.New("RegisterFunc not implemented")
+    ErrValidateCredentialsFuncNotImplemented = errors.New("ValidateCredentialsFunc not implemented")
+    ErrEmailEmpty = errors.New("Email cannot be empty")
+    ErrPasswordEmpty = errors.New("Password cannot be empty")
+    ErrDatabaseError = errors.New("Database error")
+)
