@@ -45,6 +45,7 @@ func (h *AddressHandler) AddOrUpdateAddress(w http.ResponseWriter, r *http.Reque
     userID := r.Context().Value(middleware.UserIDKey).(int64)
 
     var addr internal.Address
+    addr.UserID = userID
 
     if err :=
         json.NewDecoder(r.Body).Decode(&addr); err != nil {
@@ -54,7 +55,7 @@ func (h *AddressHandler) AddOrUpdateAddress(w http.ResponseWriter, r *http.Reque
         return
     }
 
-    addr.UserID = userID
+
     response, err := h.service.AddOrUpdateAddress(ctxTimeout, addr)
     if err != nil {
         http.Error(w,
