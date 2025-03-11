@@ -42,12 +42,12 @@ func (r *addressRepository) GetAddress(ctx context.Context, userID int64) (inter
 }
 
 func (r *addressRepository) AddOrUpdateAddress(ctx context.Context, address internal.Address) (int64, error) {
-	address, err := r.GetAddress(ctx, address.UserID)
-	if err != nil {
+	addressDB, err := r.GetAddress(ctx, address.UserID)
+	if err != nil && err != pgx.ErrNoRows {
 		return internal.ZERO, err
 	}
 
-	if address.ID == internal.ZERO {
+	if addressDB.ID == internal.ZERO {
 		err := r.Conn.QueryRow(
 			ctx,
 			`INSERT INTO address (user_id, street, number, cep, neighborhood, city, state) VALUES
