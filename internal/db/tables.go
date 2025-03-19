@@ -9,7 +9,10 @@ func createTables(ctx context.Context) {
             first_name VARCHAR(100),
             last_name VARCHAR(100),
             email VARCHAR(100) UNIQUE,
-            password TEXT
+            password TEXT,
+            created_at TIMESTAMP DEFAULT NOW(),
+            updated_at TIMESTAMP NULL,
+            deleted_at TIMESTAMP NULL
         );`
 
     _, err := Conn.Exec(ctx, createUsersTable)
@@ -26,10 +29,30 @@ func createTables(ctx context.Context) {
             cep VARCHAR(8),
             neighborhood VARCHAR(100),
             city VARCHAR(100),
-            state VARCHAR(2)
+            state VARCHAR(2),
+            created_at TIMESTAMP DEFAULT NOW(),
+            updated_at TIMESTAMP NULL,
+            deleted_at TIMESTAMP NULL
         );`
 
     _, err = Conn.Exec(ctx, createAddressTable)
+    if err != nil {
+        panic(err)
+    }
+
+    createContactTable := `
+        CREATE TABLE IF NOT EXISTS contacts (
+            id SERIAL PRIMARY KEY,
+            user_id INTEGER REFERENCES users (id),
+            name    VARCHAR(100),
+            ddi     VARCHAR(3),
+            ddd     VARCHAR(3),
+            phone_number VARCHAR(9),
+            created_at TIMESTAMP DEFAULT NOW(),
+            updated_at TIMESTAMP NULL,
+            deleted_at TIMESTAMP NULL
+        );`
+    _, err = Conn.Exec(ctx, createContactTable)
     if err != nil {
         panic(err)
     }
