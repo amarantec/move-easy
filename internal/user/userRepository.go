@@ -37,7 +37,7 @@ func (r *userRepository) ValidateCredentials(ctx context.Context, user internal.
     err :=
         r.Conn.QueryRow(
             ctx,
-            `SELECT id, password FROM users WHERE email = $1;`, user.Email).Scan(&user.ID, &user.Password)
+            `SELECT id, password FROM users WHERE email = $1 AND deleted_at IS NULL;`, user.Email).Scan(&user.ID, &user.Password)
 
     if err != nil {
         return internal.UserLogin{}, err
