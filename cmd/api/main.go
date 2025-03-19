@@ -6,15 +6,18 @@ import (
     "log"
     "net/http"
     "os"
+    "io"
 
     "github.com/joho/godotenv"
     "github.com/amarantec/move-easy/internal/db"
     "github.com/amarantec/move-easy/internal"
+    "github.com/amarantec/move-easy/internal/middleware"
     "github.com/amarantec/move-easy/internal/handlers/routes"
 )
 
 func main() {
     loadEnv()
+    setupLogger()
     ctx := context.Background()
     serverPort := ":8080"
 
@@ -31,10 +34,11 @@ func main() {
     defer Conn.Close()
 
     mux := routes.SetRoutes(Conn)
+    loggedMux := middleware.LoggerMiddleware(mux)
 
     server := &http.Server {
         Addr:       serverPort,
-        Handler:    mux,
+        Handler:    loggedMux,
     }
 
     fmt.Printf("Server listen on: localhost%s\n", server.Addr)
@@ -63,4 +67,15 @@ func buildConnectionString() (string, error) {
                         dbHost, dbPort, dbUser, dbPassword, dbName)
 
     return connectionString, nil
+}
+
+func setupLogger() {
+    logFile, err := os.OpenFile("server.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+    if err != nil {
+        log.Fatal("erro ao abrir o arquivo de log: %v\n", err)
+    }
+
+    multiWriter := io.MultiWriter(os.Stdout, logFile)
+    log.SetOutput(multiWriter)
+    log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
 }
