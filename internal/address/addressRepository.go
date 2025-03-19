@@ -27,7 +27,7 @@ func (r *addressRepository) GetAddress(ctx context.Context, userID int64) (inter
 		r.Conn.QueryRow(
 			ctx,
 			`SELECT id, street, number, cep, neighborhood, city, state
-				FROM address WHERE user_id = $1;`, userID).Scan(&address.ID,
+				FROM address WHERE user_id = $1 AND deleted_at IS NULL;`, userID).Scan(&address.ID,
 					&address.Street, &address.Number, &address.CEP,
 					&address.Neighborhood, &address.City, &address.State); err != nil {
 
@@ -67,7 +67,7 @@ func (r *addressRepository) AddOrUpdateAddress(ctx context.Context, address inte
 					neighborhood = $6,
 					city = $7,
 					state = $8
-				WHERE id = $1 AND user_id = $2;`, address.ID, address.UserID, address.Street, address.Number,
+				WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL;`, address.ID, address.UserID, address.Street, address.Number,
 					address.CEP, address.Neighborhood, address.City, address.State)
 				if err != nil {
 					return internal.ZERO, err
