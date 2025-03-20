@@ -7,6 +7,8 @@ import (
     "net/http"
     "os"
     "io"
+    "path/filepath"
+    "time"
 
     "github.com/joho/godotenv"
     "github.com/amarantec/move-easy/internal/db"
@@ -18,6 +20,10 @@ import (
 func main() {
     loadEnv()
     setupLogger()
+
+    // Wait 10 seconds for podman:postgres start
+    time.Sleep(10 * time.Second)
+
     ctx := context.Background()
     serverPort := ":8080"
 
@@ -45,11 +51,42 @@ func main() {
     log.Fatal(server.ListenAndServe())
 }
 
-func loadEnv() {
-    err := godotenv.Load("../../config/.env")
-    if err != nil {
-        log.Fatal("error loading .env file")
+func findEnv(path string) (string, error) {
+    filePath := filepath.Join(path, ".env")
+    if _, err := os.Stat(filePath); err == nil {
+        return filePath, nil
     }
+
+    files, err := os.ReadDir(path)
+    if err != nil {
+        return internal.EMPTY, err
+    }
+    
+    for _, file := range files {
+        if file.IsDir() {
+            subDirPath := filepath.Join(path, file.Name())
+            subDirFilePath, err := findEnv(subDirPath)
+            if err == nil {
+                return subDirFilePath, nil
+            }
+        }
+    }
+
+    return internal.EMPTY, fmt.Errorf("file .env not found in %s or anywhere\n", path)
+}
+
+func loadEnv() {
+    path, err := os.Getwd()
+    if err != nil {
+        log.Fatal("error getting actual dir")
+    }
+
+    appPath := filepath.Dir(filepath.Dir(path))
+    pathFile, err := findEnv(appPath)
+    if err != nil {
+        log.Fatal(".env no found")
+    }
+    godotenv.Load(pathFile)
 }
 
 func buildConnectionString() (string, error) {
