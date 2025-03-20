@@ -22,6 +22,9 @@ func NewAddressService(repository IAddressRepository) IAddressService {
 }
 
 func (s *addressService) GetAddress(ctx context.Context, userID int64) (internal.Address, error) {
+    if userID <= internal.ZERO {
+        return internal.Address{}, ErrAddressUserIDInvalid
+    }
 	return s.addressRepository.GetAddress(ctx, userID)
 }
 
