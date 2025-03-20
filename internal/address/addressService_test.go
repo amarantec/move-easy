@@ -63,9 +63,18 @@ func TestGetAddress(t *testing.T) {
         },
         {
             name: "Usuário sem endereço cadastrado",
-            userID: 2,
+            userID: 1,
             mockFunc: func(ctx context.Context, userID int64) (internal.Address, error) {
-                return internal.Address{}, ErrAddressNotFound
+                return internal.Address{}, nil
+            },
+            want:    internal.Address{},
+            wantErr: false,
+        },
+        {
+            name: "UserID vazio",
+            userID: internal.ZERO,
+            mockFunc: func(ctx context.Context, userID int64) (internal.Address, error) {
+                return internal.Address{}, ErrUserIDEmpty
             },
             want:    internal.Address{},
             wantErr: true,
@@ -119,15 +128,32 @@ func TestAddOrUpdateAddress(t *testing.T) {
             name: "Erro ao adicionar endereço",
             input: internal.Address{
                 UserID:       2,
-                Street:       "",
-                Number:       "",
+                Street:       "Rua Nova",
+                Number:       "456",
                 CEP:          "",
-                Neighborhood: "",
-                City:         "",
-                State:        "",
+                Neighborhood: "Bairro Novo",
+                City:         "Rio de Janeiro",
+                State:        "RJ",
             },
             mockFunc: func(ctx context.Context, address internal.Address) (int64, error) {
                 return internal.ZERO, ErrInvalidAddress
+            },
+            wantID:  internal.ZERO,
+            wantErr: true,
+        },
+        {
+            name: "UserID vazio",
+            input: internal.Address{
+                UserID:       internal.ZERO,
+                Street:       "Rua Nova",
+                Number:       "456",
+                CEP:          "98765432",
+                Neighborhood: "Bairro Novo",
+                City:         "Rio de Janeiro",
+                State:        "RJ",
+            },
+            mockFunc: func(ctx context.Context, address internal.Address) (int64, error) {
+                return internal.ZERO, ErrUserIDEmpty
             },
             wantID:  internal.ZERO,
             wantErr: true,
@@ -153,9 +179,9 @@ func TestAddOrUpdateAddress(t *testing.T) {
 }
 
 var (
-    ErrGetAddressNotImplemented = errors.New("GetAddress function not implemented")
-    ErrAddOrUpdateNotImplemented = errors.New("AddOrUpdate function not implemented")
-    ErrAddressNotFound           = errors.New("Address not found")
-    ErrInvalidAddress            = errors.New("Invalid address details")
+    ErrUserIDEmpty                  = errors.New("UserID is empty")
+    ErrGetAddressNotImplemented     = errors.New("GetAddress function not implemented")
+    ErrAddOrUpdateNotImplemented    = errors.New("AddOrUpdate function not implemented")
+    ErrInvalidAddress               = errors.New("Invalid address details - Missing parameters")
 )
 
