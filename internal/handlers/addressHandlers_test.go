@@ -5,6 +5,7 @@ import (
     "context"
     "bytes"
     "errors"
+    "time"
     "net/http"
     "net/http/httptest"
     "testing"
@@ -42,6 +43,9 @@ func TestAddressHandler_GetAddress(t *testing.T) {
                 Neighborhood:   "Glória",
                 City:           "Osório",
                 State:          "RS",
+                CreatedAt:      time.Time{},
+                UpdatedAt:      nil,
+                DeletedAt:      nil,
             }
             return addr, nil
         },
@@ -59,7 +63,8 @@ func TestAddressHandler_GetAddress(t *testing.T) {
             name:           "Address Get Successfully",
             userID:         1,
             wantStatus:     http.StatusOK,
-            wantResp:       `{"response":{"ID":1,"UserID":1,"Street":"General Osório","Number":"2211","CEP":"95520000","Neighborhood":"Glória","City":"Osório","State":"RS"}}`,
+            wantResp: `{"response":{"ID":1,"UserID":1,"Street":"General Osório","Number":"2211","CEP":"95520000","Neighborhood":"Glória","City":"Osório","State":"RS","CreatedAt":"0001-01-01T00:00:00Z","UpdatedAt":null,"DeletedAt":null}}`,
+
         },
         {
             name:           "Missing userID",
