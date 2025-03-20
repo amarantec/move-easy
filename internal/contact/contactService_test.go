@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/amarantec/move-easy/internal"
 	"testing"
+    "reflect"
 )
 
 type mockContactRepository struct {
@@ -87,7 +88,6 @@ func TestSaveContact(t *testing.T) {
 				SaveContactFunc: tt.mockFunc,
 			}
 			service := NewContactService(mockRepo)
-
 			id, err := service.SaveContact(context.Background(), tt.input)
 			if (err != nil) != tt.wantError {
 				t.Errorf("[%s] Esperava erro: %v, recebeu erro: %v\n", tt.name, tt.wantError, err)
@@ -178,6 +178,203 @@ func TestGetContact(t *testing.T) {
             }
             if contact != tt.wantResp {
                 t.Errorf("[%s] Contato esperado: %+v, recebido: %+v", tt.name, tt.wantResp, contact)
+            }
+        })
+    }
+}
+
+func TestListContacts(t *testing.T) {
+    tests := []struct {
+        name        string
+        userID      int64
+        mockFunc    func(ctx context.Context, userID int64) ([]internal.Contact, error)
+        wantResp    []internal.Contact
+        wantErr     bool
+    }{
+        {
+            name:       "Lista de contatos retornada com sucesso",
+            userID:     1,
+            mockFunc:   func(ctx context.Context, userID int64) ([]internal.Contact, error) {
+                return []internal.Contact{
+                    {  
+                        ID:             1,
+                        UserID:         1,
+                        Name:           "John",
+                        DDI:            "055",
+                        DDD:            "051",
+                        PhoneNumber:    "123456789",
+                    },
+                }, nil
+            },
+            wantResp: []internal.Contact{
+                {
+                    ID:          1,
+                    UserID:      1,
+                    Name:        "John",
+                    DDI:         "055",
+                    DDD:         "051",
+                    PhoneNumber: "123456789",
+                },
+            },
+            wantErr: false,
+        },
+        {
+            name:       "UserID vazio",
+            userID:     internal.ZERO,
+            mockFunc:   func(ctx context.Context, userID int64) ([]internal.Contact, error) {
+                return []internal.Contact{}, ErrUserIDEmpty
+            },
+            wantResp: []internal.Contact{},
+            wantErr:  true,
+       },
+       {
+           name:        "Lista de contatos vazia",
+           userID:      1,
+           mockFunc:    func(ctx context.Context, userID int64) ([]internal.Contact, error) {
+               return []internal.Contact{}, nil
+           },
+           wantResp:    []internal.Contact{},
+           wantErr:     false,
+       },
+    }
+
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            mockRepo := &mockContactRepository{
+                ListContactsFunc: tt.mockFunc,
+            }
+            service := NewContactService(mockRepo)
+
+            contacts, err := service.ListContacts(context.Background(), tt.userID)
+            if (err != nil) != tt.wantErr {
+                t.Errorf("[%s] Esperava erro: %v, recebeu erro: %v", tt.name, tt.wantErr, err)
+            }
+            if !reflect.DeepEqual(contacts, tt.wantResp) {
+                t.Errorf("[%s] Contato esperado: %+v, recebido: %+v", tt.name, tt.wantResp, contacts)
+            }
+        })
+    }
+}
+
+func TestUpdateContact(t *testing.T) {
+	tests := []struct {
+		name         string
+		input        internal.Contact
+		mockFunc     func(ctx context.Context, contact internal.Contact) (bool, error)
+		wantResponse bool
+		wantError    bool
+	}{
+		{
+			name:   "Contato atualizado",
+			input:  internal.Contact{ID: 1, UserID: 1, Name: "Test", DDI: "055", DDD: "051", PhoneNumber: "123456789"},
+			mockFunc: func(ctx context.Context, contact internal.Contact) (bool, error) {
+				return true, nil
+			},
+			wantResponse: true,
+			wantError:    false,
+		},
+		{
+			name:   "Erro - faltando parâmetros",
+			input:  internal.Contact{ID: 1, UserID: 1, Name: "", DDI: "055", DDD: "051", PhoneNumber: "123456789"},
+			mockFunc: func(ctx context.Context, contact internal.Contact) (bool, error) {
+				return false, ErrInvalidContact
+			},
+			wantResponse: false,
+			wantError:    true,
+		},
+		{
+			name:   "Contato não encontrado",
+			input:  internal.Contact{ID: 2, UserID: 1, Name: "Test", DDI: "055", DDD: "051", PhoneNumber: "123456789"},
+			mockFunc: func(ctx context.Context, contact internal.Contact) (bool, error) {
+				return false, ErrContactNotFound
+			},
+			wantResponse: false,
+			wantError:    true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockRepo := &mockContactRepository{
+				UpdateContactFunc: tt.mockFunc,
+			}
+			service := NewContactService(mockRepo)
+			response, err := service.UpdateContact(context.Background(), tt.input)
+			if (err != nil) != tt.wantError {
+				t.Errorf("[%s] Esperava erro: %v, recebeu erro: %v\n", tt.name, tt.wantError, err)
+			}
+
+			if response != tt.wantResponse {
+				t.Errorf("[%s] Resposta esperada: %v, recebida: %v\n", tt.name, tt.wantResponse, response)
+			}
+		})
+	}
+}
+
+func TestDeleteContact(t *testing.T) {
+    tests := []struct {
+        name        string
+        userID      int64
+        contactID   int64
+        mockFunc    func(ctx context.Context, userID, contactID int64) (bool, error)
+        wantResp    bool
+        wantErr     bool
+    }{
+        {
+            name:       "Contato deleteado",
+            userID:     1,
+            contactID:  1,
+            mockFunc:   func(ctx context.Context, userID, contactID int64) (bool, error) {
+                return true, nil
+            },
+            wantResp: true,
+            wantErr: false,
+        },
+        {
+            name:       "Contato não encontrado",
+            userID:     1,
+            contactID:  2,
+            mockFunc:   func(ctx context.Context, userID, contactID int64) (bool, error) {
+                return false, nil
+            },
+            wantResp: false,
+            wantErr:  false,
+       },
+        {
+            name:       "Contact ID vazio",
+            userID:     1,
+            contactID:  internal.ZERO,
+            mockFunc:   func(ctx context.Context, userID, contactID int64) (bool, error) {
+                return false, ErrContactIDEmpty
+            },
+            wantResp: false,
+            wantErr:  true,
+       },
+        {
+            name:       "UserID vazio",
+            userID:     internal.ZERO,
+            contactID:  internal.ZERO,
+            mockFunc:   func(ctx context.Context, userID, contactID int64) (bool, error) {
+                return false, ErrUserIDEmpty
+            },
+            wantResp: false,
+            wantErr:  true,
+       },
+    }
+
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            mockRepo := &mockContactRepository{
+                DeleteContactFunc: tt.mockFunc,
+            }
+            service := NewContactService(mockRepo)
+
+            response, err := service.DeleteContact(context.Background(), tt.userID, tt.contactID)
+            if (err != nil) != tt.wantErr {
+                t.Errorf("[%s] Esperava erro: %v, recebeu erro: %v", tt.name, tt.wantErr, err)
+            }
+            if response != tt.wantResp {
+                t.Errorf("[%s] Resposta esperada: %+v, recebida: %+v", tt.name, tt.wantResp, response)
             }
         })
     }
