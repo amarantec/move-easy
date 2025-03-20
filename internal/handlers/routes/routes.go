@@ -5,7 +5,7 @@ import(
     "github.com/amarantec/move-easy/internal/address"
     "github.com/amarantec/move-easy/internal/user"
     "github.com/amarantec/move-easy/internal/handlers"
-    "github.com/amarantec/move-easy/internal/middleware"
+    "github.com/amarantec/move-easy/internal/contact"
     "net/http"
 )
 
@@ -28,15 +28,19 @@ func SetRoutes(conn *pgxpool.Pool) *http.ServeMux {
     userHandler := handlers.NewUserHandler(userService)
 
     /*
+        Contact Dependency Injection
+    */
+
+    contactRepository := contact.NewContactRepository(conn)
+    contactService := contact.NewContactService(contactRepository)
+    contactHandler := handlers.NewContactHandler(contactService)
+
+    /*
         Routes
     */
 
-    mux.HandleFunc("/user/register", userHandler.Register)
-    mux.HandleFunc("/user/login", userHandler.Login)
-
-
-    mux.HandleFunc("/address/get-address", middleware.Authenticate(addrHandler.GetAddress))
-    mux.HandleFunc("/address/save-address", middleware.Authenticate(addrHandler.AddOrUpdateAddress))
-
+    mux.Handle("/user/", http.StripPrefix("/user", userRoutes(userHandler)))
+    mux.Handle("/address/", http.StripPrefix("/address", addressRoutes(addrHandler)))
+    mux.Handle("/contact/", http.StripPrefix("/contact", contactRoutes(contactHandler)))
     return mux
 }
