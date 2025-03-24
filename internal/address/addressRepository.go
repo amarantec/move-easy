@@ -2,19 +2,20 @@ package address
 
 import (
 	"context"
+	"log"
+
+	"github.com/amarantec/move-easy/internal"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/amarantec/move-easy/internal"
-	"log"
 )
 
 type IAddressRepository interface {
-    AddOrUpdateAddress(ctx context.Context, address internal.Address) (int64, error)
-    GetAddress(ctx context.Context, userID int64) (internal.Address, error)
+	AddOrUpdateAddress(ctx context.Context, address internal.Address) (int64, error)
+	GetAddress(ctx context.Context, userID int64) (internal.Address, error)
 }
 
 type addressRepository struct {
-	Conn	*pgxpool.Pool
+	Conn *pgxpool.Pool
 }
 
 func NewAddressRepository(conn *pgxpool.Pool) IAddressRepository {
@@ -28,8 +29,8 @@ func (r *addressRepository) GetAddress(ctx context.Context, userID int64) (inter
 			ctx,
 			`SELECT id, street, number, cep, neighborhood, city, state
 				FROM address WHERE user_id = $1 AND deleted_at IS NULL;`, userID).Scan(&address.ID,
-					&address.Street, &address.Number, &address.CEP,
-					&address.Neighborhood, &address.City, &address.State); err != nil {
+			&address.Street, &address.Number, &address.CEP,
+			&address.Neighborhood, &address.City, &address.State); err != nil {
 
 		if err == pgx.ErrNoRows {
 			return internal.Address{}, nil
@@ -52,7 +53,7 @@ func (r *addressRepository) AddOrUpdateAddress(ctx context.Context, address inte
 			ctx,
 			`INSERT INTO address (user_id, street, number, cep, neighborhood, city, state) VALUES
 				($1, $2, $3, $4, $5, $6, $7) RETURNING id;`, address.UserID, address.Street, address.Number,
-					address.CEP, address.Neighborhood, address.City, address.State).Scan(&address.ID)
+			address.CEP, address.Neighborhood, address.City, address.State).Scan(&address.ID)
 		if err != nil {
 			return internal.ZERO, err
 		}
@@ -68,19 +69,17 @@ func (r *addressRepository) AddOrUpdateAddress(ctx context.Context, address inte
 					city = $7,
 					state = $8
 				WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL;`, address.ID, address.UserID, address.Street, address.Number,
-					address.CEP, address.Neighborhood, address.City, address.State)
-				if err != nil {
-					return internal.ZERO, err
-				}
+				address.CEP, address.Neighborhood, address.City, address.State)
+		if err != nil {
+			return internal.ZERO, err
+		}
 
-				if res.RowsAffected() == internal.ZERO {
-					log.Printf("%d rows affected", res.RowsAffected())
-					return internal.ZERO, nil
-				} else {
-					log.Printf("%d rows affected", res.RowsAffected())
-					return address.ID, nil
-				}
+		if res.RowsAffected() == internal.ZERO {
+			log.Printf("%d rows affected", res.RowsAffected())
+			return internal.ZERO, nil
+		} else {
+			log.Printf("%d rows affected", res.RowsAffected())
+			return address.ID, nil
+		}
 	}
 }
-
-
