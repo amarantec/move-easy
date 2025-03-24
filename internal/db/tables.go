@@ -3,7 +3,7 @@ package db
 import "context"
 
 func createTables(ctx context.Context) {
-    createUsersTable :=`
+	createUsersTable := `
         CREATE TABLE IF NOT EXISTS users (
             id SERIAL PRIMARY KEY,
             first_name VARCHAR(100),
@@ -15,12 +15,12 @@ func createTables(ctx context.Context) {
             deleted_at TIMESTAMP NULL
         );`
 
-    _, err := Conn.Exec(ctx, createUsersTable)
-    if err != nil {
-        panic(err)
-    }
+	_, err := Conn.Exec(ctx, createUsersTable)
+	if err != nil {
+		panic(err)
+	}
 
-    createAddressTable :=`
+	createAddressTable := `
         CREATE TABLE IF NOT EXISTS address (
             id SERIAL PRIMARY KEY,
             user_id INTEGER REFERENCES users (id),
@@ -35,12 +35,12 @@ func createTables(ctx context.Context) {
             deleted_at TIMESTAMP NULL
         );`
 
-    _, err = Conn.Exec(ctx, createAddressTable)
-    if err != nil {
-        panic(err)
-    }
+	_, err = Conn.Exec(ctx, createAddressTable)
+	if err != nil {
+		panic(err)
+	}
 
-    createContactTable := `
+	createContactTable := `
         CREATE TABLE IF NOT EXISTS contacts (
             id SERIAL PRIMARY KEY,
             user_id INTEGER REFERENCES users (id),
@@ -52,9 +52,26 @@ func createTables(ctx context.Context) {
             updated_at TIMESTAMP NULL,
             deleted_at TIMESTAMP NULL
         );`
-    _, err = Conn.Exec(ctx, createContactTable)
-    if err != nil {
-        panic(err)
-    }
-}
+	_, err = Conn.Exec(ctx, createContactTable)
+	if err != nil {
+		panic(err)
+	}
 
+	createSharedVehicleTable := `
+		CREATE TABLE IF NOT EXISTS shared_vehicle (
+			id SERIAL PRIMARY KEY,
+			user_id	INTEGER REFERENCES users (id),
+			latitude DOUBLE PRECISION,
+			longitude DOUBLE PRECISION,
+			vehicle_type INTEGER,
+			reported_at TIMESTAMP DEFAULT NOW(),
+			created_at TIMESTAMP DEFAULT NOW(),
+			updated_at TIMESTAMP NULL,
+			deleted_at TIMESTAMP NULL
+		);`
+
+	_, err = Conn.Exec(ctx, createSharedVehicleTable)
+	if err != nil {
+		panic(err)
+	}
+}
