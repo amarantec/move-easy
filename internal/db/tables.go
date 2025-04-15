@@ -74,4 +74,69 @@ func createTables(ctx context.Context) {
 	if err != nil {
 		panic(err)
 	}
+
+	createBusStopTable := `
+		CREATE TABLE IF NOT EXISTS bus_stop (
+			id SERIAL PRIMARY KEY,
+			name VARCHAR(255) NOT NULL,
+			latitude DOUBLE PRECISION NOT NULL,
+			longitude DOUBLE PRECISION NOT NULL,
+			created_at TIMESTAMP DEFAULT NOW(),
+			updated_at TIMESTAMP NULL,
+			deleted_at TIMESTAMP NULL
+		);`
+
+	_, err = Conn.Exec(ctx, createBusStopTable)
+	if err != nil {
+		panic(err)
+	}
+
+	createBusLineTable := `
+		CREATE TABLE IF NOT EXISTS bus_line (
+			id SERIAL PRIMARY KEY,
+			name VARCHAR(255) NOT NULL,
+			bus_init INTEGER NOT NULL REFERENCES bus_stop(id),
+			bus_end  INTEGER NOT NULL REFERENCES bus_stop(id),
+			created_at TIMESTAMP DEFAULT NOW(),
+			updated_at TIMESTAMP NULL,
+			deleted_at TIMESTAMP NULL
+		);`
+
+	_, err = Conn.Exec(ctx, createBusLineTable)
+	if err != nil {
+		panic(err)
+	}
+
+	createBusScheduleTable := `
+		CREATE TABLE IF NOT EXISTS bus_schedule (
+			id SERIAL PRIMARY KEY,
+			bus_line_id INTEGER NOT NULL REFERENCES bus_line(id),
+			day_of_week VARCHAR(20) NOT NULL,
+			start_time 	TIME NOT NULL,
+			end_time    TIME NOT NULL,
+			created_at	TIMESTAMP DEFAULT NOW(),
+			updated_at 	TIMESTAMP NULL,
+			deleted_at  TIMESTAMP NULL
+		);`
+
+	_, err = Conn.Exec(ctx, createBusScheduleTable)
+	if err != nil {
+		panic(err)
+	}
+
+	createMetroTable := `
+		CREATE TABLE IF NOT EXISTS metro (
+			id SERIAL PRIMARY KEY,
+			station_name VARCHAR(255) NOT NULL,
+			latitude DOUBLE PRECISION NOT NULL,
+			longitude DOUBLE PRECISION NOT NULL,
+			created_at TIMESTAMP DEFAULT NOW(),
+			updated_at TIMESTAMP NULL,
+			deleted_at TIMESTAMP NULL
+		);`
+
+	_, err = Conn.Exec(ctx, createMetroTable)
+	if err != nil {
+		panic(err)
+	}
 }
