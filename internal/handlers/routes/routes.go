@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/amarantec/move-easy/internal/address"
+	"github.com/amarantec/move-easy/internal/bus"
 	"github.com/amarantec/move-easy/internal/contact"
 	"github.com/amarantec/move-easy/internal/handlers"
 	"github.com/amarantec/move-easy/internal/sharedVehicle"
@@ -46,6 +47,13 @@ func SetRoutes(conn *pgxpool.Pool) *http.ServeMux {
 	sharedVehicleHandler := handlers.NewSharedVehicleHandler(sharedVehicleService)
 
 	/*
+		Bus Dependency Injection
+	*/
+	busRepository := bus.NewBusRepository(conn)
+	busService := bus.NewBusService(busRepository)
+	busHandler := handlers.NewBusHandler(busService)
+
+	/*
 	   Routes
 	*/
 
@@ -53,5 +61,6 @@ func SetRoutes(conn *pgxpool.Pool) *http.ServeMux {
 	mux.Handle("/address/", http.StripPrefix("/address", addressRoutes(addrHandler)))
 	mux.Handle("/contact/", http.StripPrefix("/contact", contactRoutes(contactHandler)))
 	mux.Handle("/shared-vehicle/", http.StripPrefix("/shared-vehicle", sharedVehicleRoutes(sharedVehicleHandler)))
+	mux.Handle("/bus/", http.StripPrefix("/bus", busRoutes(busHandler)))
 	return mux
 }
