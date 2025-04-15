@@ -59,7 +59,7 @@ func (r *contactRepository) GetContact(ctx context.Context, userID, contactID in
 }
 
 func (r *contactRepository) ListContacts(ctx context.Context, userID int64) ([]internal.Contact, error) {
-	ctx, cancel := context.WithTimeout(ctx, 2*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, 5 * time.Second)
 	defer cancel()
 
 	contactChannel := make(chan []internal.Contact)
