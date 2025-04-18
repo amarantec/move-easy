@@ -1,0 +1,93 @@
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Centraliza horizontalmente */
+  padding: 20px;
+  font-family: Arial, sans-serif;
+  background-color: #f8f9fa; /* fundo suave */
+  min-height: 100vh; /* altura mínima da viewport */
+  box-sizing: border-box;
+}
+
+h3 {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.contact-list {
+  width: 100%;
+  max-width: 400px; /* Limita a largura total dos cards */
+  display: flex;
+  flex-direction: column; /* Dispor um abaixo do outro */
+  gap: 16px; /* Espaçamento entre os cards */
+}
+
+.contact-card {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  padding: 16px 20px;
+  width: 100%; /* ocupa toda a largura do container */
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.contact-card:hover {
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  transform: translateY(-4px);
+}
+
+h4 {
+  margin: 6px 0;
+  font-weight: 600;
+  font-size: 1rem;
+  color: #333;
+}
+
+button {
+  margin-top: 12px;
+}
+
+input[type="text"] {
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  width: 100%;
+  box-sizing: border-box;
+  font-size: 1rem;
+}
+
+.contact-card form {
+  display: flex;
+  flex-direction: column;
+}
+
+.contact-card form button {
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: none;
+  font-weight: bold;
+  font-size: 1rem;
+  margin-top: 12px;
+  cursor: pointer;
+}
+
+.contact-card form button[type="submit"] {
+  background-color: #28a745;
+  color: white;
+}
+
+.contact-card form button[type="button"] {
+  background-color: #6c757d;
+  color: white;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.login-form form button {
+  padding: 8px 16px;
+  margin-top: 12px;
+  cursor: pointer;
+}
