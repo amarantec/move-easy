@@ -1,0 +1,55 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Move Easy Update Contact {{.Contact.Name}}</title>
+    <script src="https://unpkg.com/htmx.org@2.0.4" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link rel="stylesheet" href="/static/css/styles.css">
+  </head>
+  <body>
+    <div class="contact-card" id="update-form-container">
+      <h4 class="mb-3">Edit Contact</h4>
+      <form 
+        hx-put="/contact/web/update-contact"
+        hx-target="#update-form-container"
+        hx-swap="innerHTML"
+        {{ if .ReturnTo }}
+          hx-redirect="{{ .ReturnTo }}"
+        {{ else }}
+          hx-redirect="/contact/web/list-contacts"
+        {{ end }} >
+
+        <input type="hidden" name="returnTo" value="{{ .ReturnTo }}">
+        <input type="hidden" name="id" value="{{.Contact.ID}}">
+        <div class="mb-3">
+          <label for="name" class="form-label">Name:</label>
+          <input type="text" id="name" name="name" value="{{.Contact.Name}}" class="form-control" minlength="3" maxlength="100" required>
+        </div>
+        <div class="mb-3">
+          <label for="ddi">DDI:</label>
+          <input type="text" id="ddi" name="ddi" value="{{.Contact.DDI}}" class="form-control" minlength="3" maxlength="3" required>
+        </div>
+        <div class="mb-3">
+          <label for="ddd">DDD:</label>
+          <input type="text" id="ddd" name="ddd" value="{{.Contact.DDD}}" class="form-control" minlength="3" maxlength="3" required>
+        </div>
+        <div>
+          <label for="phoneNumber">Phone Number:</label>
+          <input type="text" id="phoneNumber" name="phoneNumber" value="{{.Contact.PhoneNumber}}" class="form-control" minlength="9" maxlength="9" required>
+        </div>
+        <div class="d-flex justify-content-between">
+          <button type="submit" class="btn btn-success">Update</button>
+          <button
+            type="button"
+            class="btn btn-secondary"
+            hx-get="{{ if .ReturnTo }} {{ .ReturnTo }} {{ else }}/contact/web/list-contacts {{ end }}"
+            hx-target="body"
+            hx-swap="outerHTML">
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  </body>
+</html>
